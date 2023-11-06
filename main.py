@@ -1,10 +1,8 @@
-import time
-
 from webbot import Browser
 from bs4 import BeautifulSoup
 import re
 from passwords import username , password
-
+notifs = []
 web = Browser()
 
 
@@ -48,33 +46,34 @@ def show_new_all_message(all_home_elements):
         print(s[0].contents[3].contents[0])
     except:
         return 0
-    web.go_to('http://lms.ui.ac.ir/activity/notifications/update')
     web.go_to('http://lms.ui.ac.ir/activity/notifications/pulldown')
+    web.go_to('http://lms.ui.ac.ir/activity/notifications')
     r = web.get_page_source()
     soup = BeautifulSoup(r, 'html.parser')
-    s = soup.findAll('div', id="global_content")
-    for all_Notif in s:
-        for messages in all_Notif.contents[3:]:
-            try:
-                for message in messages.contents[1].contents:
+    s = soup.findAll('ul', id="notifications_main")
+    for all_Notif in s[0].contents:
+        try:
+            if all_Notif.attrs['class'][0] != 'notifications_unread':
+                continue
+            for messages in all_Notif.contents:
+                str = ''
+                for message in messages:
                     try:
-                        print(message.contents[0],end='')
+                        str += message.contents[0]
                     except:
-                        print(message,end='')
-            except: pass
-
-    web.go_back()
-    web.go_back()
-    web.go_to('http://lms.ui.ac.ir/activity/notifications/markread')
-    time.sleep(10)
-
+                        if message != '\n':
+                            str += message
+                if str != '':
+                    notifs.append(str)
+        except:
+            pass
 
 
 login()
 all_home_elements, lessons = extract_info()
 show_new_all_message(all_home_elements)
-#4012013129
-#6570091522
+print(notifs)
+
 
 
 
